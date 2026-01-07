@@ -6,7 +6,7 @@
 <div class="restaurant-container">
     <h1>Restaurant Queue Simulator</h1>
     <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-        Manage customer queue using FIFO (First In, First Out) principle
+        Manage restaurant tables using Fusion Tree and customer queue
     </p>
 
     <!-- Flash Messages -->
@@ -31,22 +31,53 @@
                         <span style="display: block; font-size: 0.75rem; color: var(--primary-color); margin-top: 0.25rem;">← Next</span>
                     {% endif %}
                 </div>
+                </div>
             {% endfor %}
+        </div>
+    </div>
+
+    <!-- Queue Display -->
+    <div class="queue-display" id="queueDisplay" style="background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-lg); margin: 2rem 0; border: 1px solid var(--border-color);">
+        <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">Waiting Queue</h2>
+        {% if queue and queue|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for customer in queue %}
+                    <div class="queue-item" style="background: var(--bg-tertiary); padding: 1rem 1.5rem; border-radius: var(--radius-md); border-left: 4px solid {% if loop.first %}var(--success-color){% else %}var(--primary-color){% endif %}; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.25rem; font-weight: 700; background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; min-width: 30px;">#{{ loop.index }}</span>
+                                    <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-primary);">{{ customer[0] }}</span>
+                                    {% if loop.first %}
+                                        <span style="background: var(--success-color); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;">NEXT</span>
+                                    {% endif %}
+                                </div>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem; margin-left: 2.5rem;">
+                                    Party of {{ customer[1] }} people
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% else %}
-            <p><em>Queue is empty. Add customers to get started!</em></p>
+            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                <p style="font-size: 1.1rem;"><em>Queue is empty. Add customers to get started!</em></p>
+            </div>
         {% endif %}
     </div>
 
     {% if queue %}
     <div style="display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0; flex-wrap: wrap;">
-        <div style="background: var(--bg-primary); padding: 1rem 1.5rem; border-radius: var(--radius-md); text-align: center;">
+        <div style="background: var(--bg-tertiary); padding: 1rem 1.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
             <div style="font-size: 0.875rem; color: var(--text-secondary);">Queue Size</div>
-            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">{{ queue|length }}</div>
+            <div style="font-size: 2rem; font-weight: 700; background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ queue|length }}</div>
         </div>
         {% if queue %}
-        <div style="background: var(--bg-primary); padding: 1rem 1.5rem; border-radius: var(--radius-md); text-align: center;">
+        <div style="background: var(--bg-tertiary); padding: 1rem 1.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
             <div style="font-size: 0.875rem; color: var(--text-secondary);">Next Customer</div>
-            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">{{ queue[0] }}</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">{{ queue[0][0] }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Party of {{ queue[0][1] }}</div>
         </div>
         {% endif %}
     </div>
@@ -56,16 +87,34 @@
         <form class="form" action="/projects/restaurant_simulator/add" method="POST">
             <label for="name">Customer Name</label>
             <input type="text" id="name" name="name" placeholder="Enter customer name" required>
-            <button type="submit">➕ Add to Queue</button>
+            <label for="party_size">Party Size</label>
+            <select id="party_size" name="party_size" required>
+                <option value="2">2 people</option>
+                <option value="4">4 people</option>
+                <option value="8">8 people</option>
+            </select>
+            <button type="submit">Customer Walk-In</button>
         </form>
 
         <form class="form-button-only" action="/projects/restaurant_simulator/remove" method="POST">
             <button type="submit" style="background: linear-gradient(135deg, var(--danger-color), #dc2626);">
-                ➖ Remove Next Customer
+                Cancel Customer
             </button>
         </form>
 
-        <form class="form-button-only" action="/projects/restaurant_simulator/next" method="GET">
+        <form class="form" action="/projects/restaurant_simulator/finish_meal" method="POST">
+            <label for="table_id">Finish Meal (Table ID)</label>
+            <select id="table_id" name="table_id" required>
+                <option value="">Select a table...</option>
+                {% for size in [2, 4, 8] %}
+                    {% for i in [1, 2, 3] %}
+                        {% set table_id = (size * 10) + i %}
+                        {% if table_id not in available_tables[size] %}
+                            <option value="{{ table_id }}">Table {{ table_id }} ({{ size }}-seater)</option>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </select>
             <button type="submit" style="background: linear-gradient(135deg, var(--success-color), #059669);">
                 👤 View Next Customer
             </button>

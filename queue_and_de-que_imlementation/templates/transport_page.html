@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <title>Transport Optimization</title>
+
+    <style>
+        svg {
+            width: 100%;
+            max-width: 900px;
+            height: 450px;
+            background: #faf6f6;
+            margin-top: 30px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Lines */
+        .line {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .lrt1 { stroke: #16a34a; }
+        .lrt2 { stroke: #2563eb; }
+        .mrt3 { stroke: #f59e0b; }
+
+        /* Stations */
+        .station {
+            fill: white;
+            stroke: black;
+            stroke-width: 3;
+        }
+
+        .interchange {
+            stroke-width: 4;
+        }
+
+        /* Labels */
+        .label {
+            font-size: 12px;
+            fill: #111;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Transport Optimization System</h1>
+
+    <form method="POST">
+        <label for="from_station">FROM:</label>
+        <input type="text" id="from_station" name="from_station" list="stations_list" required>
+
+        <label for="to_station">GOING TO:</label>
+        <input type="text" id="to_station" name="to_station" list="stations_list" required>
+
+        <button type="submit">Find Optimal Path</button>
+        <button type="button" onclick="window.location='/'">Clear Path</button>
+    </form>
+
+    <datalist id="stations_list">
+        {% for station in stations %}
+            <option value="{{ station }}">
+        {% endfor %}
+    </datalist>
+
+    {% if message %}
+        <h2>{{ message }}</h2>
+    {% endif %}
+
+    {% if path %}
+        <h2>Optimal path:</h2>
+        <p>{{ path | map('replace', '_', ' ') | join(' → ') }}</p>
+    {% endif %}
+
+
+<!--SVG VIEW BOX FOR TRANSIT STATION AND LINES-->
+<svg viewBox="0 0 50 800" preserveAspectRatio="xMidYMid meet">
+
+    <!--Connector Lines-->
+    <!--Roosevelt to North Ave. Line-->
+    <line x1="50" y1="50" x2="60" y2="100" style="stroke:rgb(48, 48, 47);stroke-width:10"></line>
+    <!--Taft to EDSA Line-->
+    <line x1="-380" y1="703" x2="-450" y2="700" style="stroke:rgb(48, 48, 47);stroke-width:10"></line>
+
+    <!-- LRT-1 Line -->
+    <!--Roosevelt to Monumento Line-->
+    <line x1="50" y1="50" x2="-450" y2="50" style="stroke:yellow;stroke-width:10"></line>
+    <!--Monumento to Baclaran Line-->
+    <line x1="-450" y1="50" x2="-450" y2="740" style="stroke:yellow;stroke-width:10"></line>
+    
+    <!--MRT 3 Lines-->
+    <!--North Ave to Quezon Ave-->
+    <line x1="60" y1="100" x2="120" y2="140" style="stroke:blue;stroke-width:10"></line>
+    <!--Quezon Ave to GMA Kamuning-->
+    <line x1="120" y1="140" x2="180" y2="180" style="stroke:blue;stroke-width:10"></line>
+    <!--GMA Kamuning to Ortigas-->
+    <line x1="180" y1="180" x2="180" y2="480" style="stroke:blue;stroke-width:10"></line>
+    <!--Ortigas to Shaw-->
+    <line x1="180" y1="480" x2="140" y2="520" style="stroke:blue;stroke-width:10"></line>
+    <!--Shaw to Boni Avenue-->
+    <line x1="140" y1="520" x2="80" y2="560" style="stroke:blue;stroke-width:10"></line>
+    <!--Boni Avenue to Buendia-->
+    <line x1="80" y1="560" x2="-80" y2="680" style="stroke:blue;stroke-width:10"></line>
+    <!--Buendia to Ayala-->
+    <line x1="-80" y1="680" x2="-180" y2="703" style="stroke:blue;stroke-width:10"></line>
+    <!--Ayala to Taft-->
+    <line x1="-180" y1="703" x2="-380" y2="703" style="stroke:blue;stroke-width:10"></line>
+
+    <!-- LRT-2 Line -->
+    <!--D.Jose connected to Recto to J.Ruiz Line-->
+    <line x1="-450" y1="340" x2="-80" y2="340" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+    <!--J. Ruiz to Gilmore Line-->
+    <line x1="-80" y1="340" x2="30" y2="335" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+    <!--Gilmore to Betty Go-Belmonte Line-->
+    <line x1="30" y1="335" x2="80" y2="300" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+    <!--Betty Go-Belmonte to Katipunan-->
+    <line x1="80" y1="300" x2="300" y2="300" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+    <!--Katipunan to Santolan-->
+    <line x1="300" y1="300" x2="360" y2="335" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+    <!--Santolan to Antipolo-->
+    <line x1="360" y1="335" x2="520" y2="335" style="stroke:rgb(249, 186, 255);stroke-width:10"></line>
+
+    <!--LRT 1 Circles and Labels-->
+    <g fill="white" stroke="black" stroke-width="3">
+        <circle cx="50" cy="50" r="10"/>
+        <circle cx="-200" cy="50" r="10"/>
+        <circle cx="-450" cy="50" r="10"/>
+        <circle cx="-450" cy="100" r="10"/>
+        <circle cx="-450" cy="140" r="10"/>
+        <circle cx="-450" cy="180" r="10"/>
+        <circle cx="-450" cy="220" r="10"/>
+        <circle cx="-450" cy="260" r="10"/>
+        <circle cx="-450" cy="300" r="10"/>
+        <circle cx="-450" cy="340" r="10"/>
+        <circle cx="-450" cy="380" r="10"/>
+        <circle cx="-450" cy="420" r="10"/>
+        <circle cx="-450" cy="460" r="10"/>
+        <circle cx="-450" cy="500" r="10"/>
+        <circle cx="-450" cy="540" r="10"/>
+        <circle cx="-450" cy="580" r="10"/>
+        <circle cx="-450" cy="620" r="10"/>
+        <circle cx="-450" cy="660" r="10"/>
+        <circle cx="-450" cy="700" r="10"/>
+        <circle cx="-450" cy="740" r="10"/>
+    </g>
+
+    <!-- Labels -->
+    <g font-size="12" fill="#111" font-family="Arial">
+        <text x="25" y="30">Roosevelt</text>
+        <text x="-225" y="30">Balintawak</text>
+        <text x="-480" y="30">Monumento</text>
+        <text x="-530" y="103">5th Avenue</text>
+        <text x="-510" y="143">R Papa</text>
+        <text x="-540" y="183">Abad Santos</text>
+        <text x="-530" y="223">Blumentritt</text>
+        <text x="-520" y="263">Tayuman</text>
+        <text x="-520" y="303">Bambang</text>
+        <text x="-550" y="343">Doroteo Jose</text>
+        <text x="-520" y="383">Carriedo</text>
+        <text x="-560" y="423">Central Terminal</text>
+        <text x="-530" y="463">UN Avenue</text>
+        <text x="-530" y="503">Pedro Gil</text>
+        <text x="-530" y="543">Quirino</text>
+        <text x="-530" y="583">Vito Cruz</text>
+        <text x="-530" y="623">Gil Puyat</text>
+        <text x="-530" y="663">Libertad</text>
+        <text x="-530" y="703">EDSA</text>
+        <text x="-530" y="743">Baclaran</text>
+    </g>
+    
+    <!--LRT 2 Circles and Labels-->
+    <g fill="white" stroke="black" stroke-width="3">
+        <circle cx="-420" cy="340" r="10"/>
+        <circle cx="-340" cy="340" r="10"/>
+        <circle cx="-260" cy="340" r="10"/>
+        <circle cx="-160" cy="340" r="10"/>
+        <circle cx="-80" cy="340" r="10"/>
+        <circle cx="30" cy="335" r="10"/>
+        <circle cx="80" cy="300" r="10"/>
+        <circle cx="180" cy="300" r="10"/>
+        <circle cx="240" cy="300" r="10"/>
+        <circle cx="300" cy="300" r="10"/>
+        <circle cx="360" cy="335" r="10"/>
+        <circle cx="440" cy="335" r="10"/>
+        <circle cx="520" cy="335" r="10"/>
+    </g>
+
+    <g font-size="12" fill="#111" font-family="Arial">
+        <text x="-435" y="320">Recto</text>
+        <text x="-360" y="320">Legarda</text>
+        <text x="-280" y="320">Pureza</text>
+        <text x="-180" y="320">V. Mapa</text>
+        <text x="-100" y="320">J. Ruiz</text>
+        <text x="10" y="360">Gilmore</text>
+        <text x="30" y="280">Betty Go-Belmonte</text>
+        <text x="220" y="330">Anonas</text>
+        <text x="275" y="280">Katipunan</text>
+        <text x="335" y="310">Santolan</text>
+        <text x="400" y="310">Marikina-Pasig</text>
+        <text x="500" y="360">Antipolo</text>
+    </g>
+
+    <!-- MRT-3 Circle and Labels -->
+    <g fill="white" stroke="black" stroke-width="3">
+        <circle cx="60" cy="100" r="10"/>
+        <circle cx="120" cy="140" r="10"/>
+        <circle cx="180" cy="180" r="10"/>
+        <circle cx="180" cy="380" r="10"/>
+        <circle cx="180" cy="480" r="10"/>
+        <circle cx="140" cy="520" r="10"/>
+        <circle cx="80" cy="560" r="10"/>
+        <circle cx="0" cy="620" r="10"/>
+        <circle cx="-80" cy="680" r="10"/>
+        <circle cx="-180" cy="703" r="10"/>
+        <circle cx="-280" cy="703" r="10"/>
+        <circle cx="-380" cy="703" r="10"/>
+    </g>
+
+    <!-- Labels -->
+    <g font-size="12" fill="#111" font-family="Arial">
+        <text x="-15" y="105">North Ave.</text>
+        <text x="30" y="150">Quezon Ave</text>
+        <text x="60" y="190">GMA Kamuning</text>
+        <text x="200" y="290" transform="rotate(-25 200 290)">Araneta Center-Cubao</text>
+        <text x="200" y="385">Santolan-Anapolis</text>
+        <text x="200" y="485">Ortigas</text>
+        <text x="160" y="525">Shaw Boulevard</text>
+        <text x="100" y="565">Boni Avenue</text>
+        <text x="20" y="625">Guadalupe</text>
+        <text x="-60" y="685">Buendia</text>
+        <text x="-195" y="685">Ayala</text>
+        <text x="-310" y="685">Magallanes</text>
+        <text x="-410" y="685">Taft Avenue</text>
+    </g>
+
+    <g fill="white" stroke="black" stroke-width="3">
+    {% for station, (cx, cy) in station_coords.items() %}
+        <circle cx="{{ cx }}" cy="{{ cy }}" r="10"
+                fill="{% if path and station in path %}#39FF14{% else %}white{% endif %}"
+        />
+    {% endfor %}
+    </g>
+
+</svg>
+
+</body>
+</html>

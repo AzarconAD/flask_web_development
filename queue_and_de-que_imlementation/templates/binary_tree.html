@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Binary Search Tree Visualizer{% endblock title %}
+
+{% block content %}
+<style>
+    .bst-container {
+        background: var(--bg-primary);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 2rem;
+    }
+
+    .bst-container h1 {
+        text-align: center;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+    }
+
+    .bst-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-end;
+    }
+
+    .bst-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .bst-form-group label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .bst-form-group input {
+        padding: 0.75rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        width: 150px;
+    }
+
+    .bst-button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .bst-button-insert {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+    }
+
+    .bst-button-search {
+        background: linear-gradient(135deg, var(--secondary-color), #7c3aed);
+        color: white;
+    }
+
+    .bst-button-delete {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+    }
+
+    .bst-button-clear {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .bst-button:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .bst-canvas {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        overflow: auto;
+        min-height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .bst-empty {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 3rem;
+        font-size: 1.1rem;
+    }
+
+    .bst-info {
+        background: var(--bg-secondary);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        margin-top: 2rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .bst-info h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .bst-traversal {
+        background: var(--bg-primary);
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        margin-top: 0.5rem;
+    }
+
+    .flash-messages {
+        margin-bottom: 1.5rem;
+    }
+
+    .flash-message {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .flash-message.success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid var(--success-color);
+    }
+
+    .flash-message.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid var(--danger-color);
+    }
+
+    .flash-message.info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid var(--secondary-color);
+    }
+</style>
+
+<div class="bst-container">
+    <h1>Binary Search Tree Visualizer</h1>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+        Visualize and interact with a Binary Search Tree data structure
+    </p>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="bst-controls">
+        <form action="/projects/binary_tree/insert" method="POST" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div class="bst-form-group">
+                <label for="value">Value</label>
+                <input type="number" id="value" name="value" placeholder="Enter number" required>
+            </div>
+            <button type="submit" class="bst-button bst-button-insert">Insert</button>
+        </form>
+
+        <form action="/projects/binary_tree/search" method="POST" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div class="bst-form-group">
+                <label for="search_value">Search</label>
+                <input type="number" id="search_value" name="value" placeholder="Enter number" required>
+            </div>
+            <button type="submit" class="bst-button bst-button-search">Search</button>
+        </form>
+
+        <form action="/projects/binary_tree/delete" method="POST" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div class="bst-form-group">
+                <label for="delete_value">Delete</label>
+                <input type="number" id="delete_value" name="value" placeholder="Enter number" required>
+            </div>
+            <button type="submit" class="bst-button bst-button-delete">Delete</button>
+        </form>
+
+        <form action="/projects/binary_tree/clear" method="POST">
+            <button type="submit" class="bst-button bst-button-clear">Clear Tree</button>
+        </form>
+    </div>
+
+    <div class="bst-canvas">
+        {% if nodes|length == 0 %}
+            <div class="bst-empty">
+                Tree is empty — insert a number to begin.
+            </div>
+        {% else %}
+            {% set w = svg_info.width %}
+            {% set h = svg_info.height %}
+            {% set r = svg_info.node_radius %}
+            <svg width="{{ w }}" height="{{ h }}" viewBox="0 0 {{ w }} {{ h }}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.15"/>
+                    </filter>
+                </defs>
+
+                {# draw edges first (lines) #}
+                {% for e in edges %}
+                    {% set parent = (nodes | selectattr("id","equalto", e.from) | list)[0] %}
+                    {% set child = (nodes | selectattr("id","equalto", e.to) | list)[0] %}
+                    <line x1="{{ parent.x + r }}" y1="{{ parent.y + r }}" x2="{{ child.x + r }}" y2="{{ child.y + r }}"
+                          stroke="#666" stroke-width="2" stroke-linecap="round" stroke-opacity="0.8"/>
+                {% endfor %}
+
+                {# draw nodes (circles + text) #}
+                {% for n in nodes %}
+                    <g>
+                        <circle cx="{{ n.x + r }}" cy="{{ n.y + r }}" r="{{ r }}" 
+                                fill="#ffffff" stroke="#2b6cb0" stroke-width="2" filter="url(#shadow)"></circle>
+                        <text x="{{ n.x + r }}" y="{{ n.y + r }}" 
+                              font-size="12" text-anchor="middle" dominant-baseline="central" 
+                              fill="#111" pointer-events="none">{{ n.value }}</text>
+                    </g>
+                {% endfor %}
+            </svg>
+        {% endif %}
+    </div>
+
+    <div class="bst-info">
+        <h3>Post-order Traversal:</h3>
+        <div class="bst-traversal">
+            {% if traversal %}
+                {{ traversal | join(', ') }}
+            {% else %}
+                (empty)
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
