@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>BST Visualizer</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #FDFBF7;       /* Ivory Parchment */
+      --ink-color: #2B1D0E;      /* Dark Coffee Ink */
+      --gold-accent: #D4AF37;    /* Metallic Gold */
+      --red-accent: #800020;     /* Burgundy (Active) */
+      --paper-texture: #F5E6D3;
+    }
+
+    body {
+      font-family: 'Lora', serif;
+      padding: 40px;
+      background-color: var(--bg-color);
+      color: var(--ink-color);
+      background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      color: var(--ink-color);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid var(--gold-accent);
+      padding-bottom: 15px;
+      text-align: center;
+    }
+
+    .subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        margin-bottom: 30px;
+        color: #5C4033;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    /* CONTROLS (THE LEDGER) */
+    .controls {
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background: #fff;
+      padding: 20px 40px;
+      border: 1px solid #d3c4a9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      border-radius: 2px;
+    }
+
+    form.inline { display: inline-flex; gap: 15px; align-items: center; }
+
+    input[type="number"] {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--ink-color);
+      color: var(--ink-color);
+      padding: 8px;
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      width: 140px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    input[type="number"]:focus {
+      border-color: var(--gold-accent);
+    }
+    input[type="number"]::placeholder {
+        color: rgba(43, 29, 14, 0.4);
+        font-style: italic;
+    }
+
+    button {
+      background: var(--gold-accent);
+      border: 1px solid #b69b6a;
+      color: #fff;
+      padding: 10px 25px;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    button:hover {
+      background: #2B1D0E;
+      color: var(--gold-accent);
+      transform: translateY(-2px);
+    }
+
+    /* TRAVERSAL BOX (THE NOTE) */
+    .traversal-box {
+      margin-bottom: 30px;
+      padding: 15px 30px;
+      background-color: #fff;
+      border-left: 4px solid var(--gold-accent);
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      color: var(--ink-color);
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .traversal-box strong {
+        font-family: 'Cinzel', serif;
+        font-style: normal;
+        margin-right: 10px;
+        color: #5C4033;
+    }
+
+    /* CANVAS (THE CHART FRAME) */
+    .canvas {
+      background: #FDFBF7;
+      border: 8px solid var(--ink-color); /* Heavy Frame */
+      outline: 2px solid var(--gold-accent); /* Inner Gold Trim */
+      border-radius: 4px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: auto;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Paper texture inside canvas */
+    .canvas::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    svg { overflow: visible; position: relative; z-index: 2; }
+    
+    /* EDGES (INK LINES) */
+    line {
+      stroke: var(--ink-color) !important; 
+      stroke-width: 2;
+      stroke-linecap: round;
+      opacity: 0.8;
+    }
+
+    /* NODES (GOLD COINS / WAX SEALS) */
+    circle {
+      fill: #FFF8E7 !important; /* Cream Fill */
+      stroke: var(--gold-accent) !important;
+      stroke-width: 3;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+      transition: all 0.3s ease;
+    }
+    
+    /* ACTIVE SEARCH RESULT (BURGUNDY SEAL) */
+    .active-node {
+      stroke: var(--red-accent) !important; /* Burgundy Border */
+      stroke-width: 4px !important;
+      fill: #fff0f5 !important; /* Slight reddish tint fill */
+      filter: drop-shadow(0 0 10px rgba(128, 0, 32, 0.4));
+    }
+    
+    .node-text { 
+      font-family: 'Playfair Display', serif;
+      font-size: 14px; 
+      fill: var(--ink-color) !important; 
+      font-weight: 700;
+      text-anchor: middle; 
+      dominant-baseline: central; 
+      pointer-events: none; 
+    }
+
+    hr { 
+        border: 0; 
+        border-top: 1px solid var(--gold-accent); 
+        width: 100%; 
+        max-width: 200px;
+        margin: 40px auto; 
+    }
+
+    /* TYPEWRITER RAW DATA */
+    h4 { 
+        color: #5C4033; 
+        font-family: 'Cinzel', serif;
+        margin-bottom: 15px; 
+        text-transform: uppercase; 
+    }
+    
+    pre {
+      background: #fff;
+      border: 1px solid #d3c4a9;
+      color: var(--ink-color);
+      padding: 20px;
+      font-family: 'Courier Prime', 'Courier New', monospace; /* Typewriter font */
+      font-size: 14px;
+      box-shadow: 5px 5px 0px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <h2>The Binary Archive</h2>
+  <div class="subtitle">Botanical Indexing System</div>
+
+  <div class="controls">
+    <form class="inline" action="{{ url_for('bst_insert') }}" method="POST">
+      <input type="number" name="value" required placeholder="Entry Value..." />
+      <button type="submit">Catalog Node</button>
+    </form>
+    
+    <form class="inline" action="{{ url_for('bst_search') }}" method="POST">
+       <input type="number" name="value" required placeholder="Query ID..." />
+       <button type="submit" style="background: var(--ink-color); border-color: var(--ink-color);">Locate Record</button>
+    </form>
+  </div>
+
+  {% if post_order %}
+  <div class="traversal-box">
+    <strong>Post-Order Sequence:</strong> {{ post_order }}
+  </div>
+  {% endif %}
+
+  <div class="canvas">
+    {% if nodes|length == 0 %}
+      <div style="padding:60px; font-style: italic; color: #777; font-family: 'Lora', serif;">
+        The archive is currently empty.<br>
+        Please catalog a new entry to begin the schematic.
+      </div>
+    {% else %}
+      {% set w = svg_info.width %}
+      {% set h = svg_info.height %}
+      {% set r = svg_info.node_radius %}
+      
+      <svg width="{{ w }}" height="{{ h }}" viewBox="0 0 {{ w }} {{ h }}" xmlns="http://www.w3.org/2000/svg">
+        
+        {% for e in edges %}
+          {% set parent = (nodes | selectattr("id","equalto", e.from) | list)[0] %}
+          {% set child = (nodes | selectattr("id","equalto", e.to) | list)[0] %}
+          <line x1="{{ parent.x + r }}" y1="{{ parent.y + r }}" x2="{{ child.x + r }}" y2="{{ child.y + r }}"/>
+        {% endfor %}
+
+        {% for n in nodes %}
+          <g>
+            {# Logic: If this node is the 'highlight', add the 'active-node' class. #}
+            {% set active_class = 'active-node' if n.id == highlight else '' %}
+            
+            <circle cx="{{ n.x + r }}" cy="{{ n.y + r }}" r="{{ r }}" 
+                    class="{{ active_class }}"></circle>
+            <text x="{{ n.x + r }}" y="{{ n.y + r }}" class="node-text">{{ n.value }}</text>
+          </g>
+        {% endfor %}
+      </svg>
+    {% endif %}
+  </div>
+
+  <hr>
+  <h4>Schematic Text Representation</h4>
+  <pre>{{ tree_visual }}</pre>
+
+</body>
+</html>

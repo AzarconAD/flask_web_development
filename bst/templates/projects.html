@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}
+Research Portfolio
+{% endblock title %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg-color: #FDFBF7;       /* Ivory Parchment */
+        --text-main: #2B1D0E;      /* Dark Coffee */
+        --text-light: #5C4033;     /* Mocha */
+        --gold-accent: #D4AF37;    /* Metallic Gold */
+        --paper-white: #FFFFFF;
+        --card-border: #E5E5E5;
+    }
+
+    .projects-section {
+        min-height: calc(100vh - 80px);
+        background-color: var(--bg-color);
+        /* Parchment Texture */
+        background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+        padding: 80px 20px;
+        font-family: 'Lora', serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Header Styling */
+    .projects-section h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        color: var(--text-main);
+        font-style: italic;
+        margin-bottom: 15px;
+        text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+
+    .subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 60px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--gold-accent);
+        padding-bottom: 10px;
+    }
+
+    /* Grid Layout */
+    .projects-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 40px;
+        width: 100%;
+        max-width: 1200px;
+    }
+
+    /* PROJECT CARD (The Exhibit) */
+    .project-card {
+        background: var(--paper-white);
+        border: 1px solid var(--card-border);
+        padding: 40px 30px;
+        text-decoration: none; /* Remove underline */
+        position: relative;
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 280px;
+        box-shadow: 0 4px 10px rgba(43, 29, 14, 0.03);
+    }
+
+    /* Elegant Hover Effect */
+    .project-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(43, 29, 14, 0.1);
+        border-color: var(--gold-accent);
+    }
+
+    /* Inner Border Decoration on Hover */
+    .project-card::after {
+        content: '';
+        position: absolute;
+        top: 8px; left: 8px; right: 8px; bottom: 8px;
+        border: 1px solid var(--gold-accent);
+        opacity: 0;
+        transition: opacity 0.4s;
+        pointer-events: none;
+    }
+    .project-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Card Header */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 15px;
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        color: var(--text-main);
+    }
+
+    .catalog-number {
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        color: var(--gold-accent);
+        font-weight: 700;
+        border: 1px solid var(--gold-accent);
+        padding: 4px 8px;
+        border-radius: 2px;
+    }
+
+    /* Typography */
+    .card-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        color: var(--text-main);
+        margin-bottom: 5px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .data-struct-type {
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        display: block;
+        letter-spacing: 1px;
+    }
+
+    .card-desc {
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        font-family: 'Lora', serif;
+    }
+
+    /* "Examine" Link/Button */
+    .examine-link {
+        margin-top: auto;
+        color: var(--text-main);
+        font-family: 'Cinzel', serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: color 0.3s;
+    }
+    
+    .project-card:hover .examine-link {
+        color: var(--gold-accent);
+    }
+
+    .arrow {
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+    }
+    
+    .project-card:hover .arrow {
+        transform: translateX(5px);
+    }
+
+</style>
+
+<section class="projects-section">
+    <h1>Catalog of Works</h1>
+    <div class="subtitle">
+        Applied Computational Studies
+    </div>
+
+    <div class="projects-list">
+        
+        <a href="/projects/queue_card_game" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">🃏</span>
+                <span class="catalog-number">FIG. I</span>
+            </div>
+            <div>
+                <div class="card-title">Card Strategy</div>
+                <span class="data-struct-type">Subject: FIFO Queue</span>
+                <p class="card-desc">
+                    A study in sequential processing. Utilize a First-In-First-Out mechanism to manage a deck of playing cards in a wager simulation.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+
+        <a href="/projects/restaurant_simulator" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">🍽️</span>
+                <span class="catalog-number">FIG. II</span>
+            </div>
+            <div>
+                <div class="card-title">Service Logistics</div>
+                <span class="data-struct-type">Subject: FIFO Queue</span>
+                <p class="card-desc">
+                    An operational simulation of a dining establishment. Observe how customer orders are processed linearly through a queue system.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+
+        <a href="/projects/tab_manager" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">📑</span>
+                <span class="catalog-number">FIG. III</span>
+            </div>
+            <div>
+                <div class="card-title">The Tab Manager</div>
+                <span class="data-struct-type">Subject: Double-Ended Queue</span>
+                <p class="card-desc">
+                    An organizational tool for browser management. Demonstrates the flexibility of adding and removing elements from both ends of a list.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+        
+        <a href="/projects/bst" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">🌳</span>
+                <span class="catalog-number">FIG. IV</span>
+            </div>
+            <div>
+                <div class="card-title">Botanical Hierarchy</div>
+                <span class="data-struct-type">Subject: Binary Search Tree</span>
+                <p class="card-desc">
+                    A visual taxonomy of data. Observe the branching nature of binary search trees through dynamic insertion and traversal mapping.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+
+        <a href="/projects/binary_tree" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">🕸️</span>
+                <span class="catalog-number">FIG. V</span>
+            </div>
+            <div>
+                <div class="card-title">The Binary Ledger</div>
+                <span class="data-struct-type">Subject: Binary Tree (Level Order)</span>
+                <p class="card-desc">
+                    A structural registry system. Demonstrates Level-Order insertion logic and multiple traversal algorithms interacting via a JSON API.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+
+        <a href="/projects/transport_optimization" class="project-card">
+            <div class="card-header">
+                <span class="card-icon">🚂</span>
+                <span class="catalog-number">FIG. VI</span>
+            </div>
+            <div>
+                <div class="card-title">Transit Cartography</div>
+                <span class="data-struct-type">Subject: Graphs (BFS Algorithm)</span>
+                <p class="card-desc">
+                    A navigational analysis tool. Employs Breadth-First Search algorithms to calculate the most efficient path between network stations.
+                </p>
+            </div>
+            <div class="examine-link">
+                Examine Study <span class="arrow">→</span>
+            </div>
+        </a>
+
+    </div>
+</section>
+{% endblock content %}

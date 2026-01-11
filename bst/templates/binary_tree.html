@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Binary Tree Ledger{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg-color: #FDFBF7;       /* Ivory Parchment */
+        --text-main: #2B1D0E;      /* Dark Coffee */
+        --text-light: #5C4033;     /* Mocha */
+        --gold-accent: #D4AF37;    /* Metallic Gold */
+        --paper-white: #FFFFFF;
+        --border-color: #d3c4a9;
+    }
+
+    .bt-section {
+        min-height: calc(100vh - 80px);
+        padding: 60px 20px;
+        background-color: var(--bg-color);
+        background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: 'Lora', serif;
+        color: var(--text-main);
+    }
+
+    /* HEADER */
+    h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem;
+        color: var(--text-main);
+        font-style: italic;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+
+    .subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 50px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--gold-accent);
+        padding-bottom: 10px;
+    }
+
+    /* MAIN CONTAINER (The Ledger) */
+    .ledger-container {
+        width: 100%;
+        max-width: 800px;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        padding: 40px;
+        box-shadow: 
+            0 10px 30px rgba(43, 29, 14, 0.05),
+            inset 0 0 40px rgba(0,0,0,0.02);
+        position: relative;
+    }
+
+    /* Decorative corners */
+    .ledger-container::before {
+        content: '';
+        position: absolute;
+        top: 6px; left: 6px; right: 6px; bottom: 6px;
+        border: 2px double var(--gold-accent);
+        pointer-events: none;
+        opacity: 0.4;
+    }
+
+    /* FORM STYLING */
+    .input-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 30px;
+    }
+
+    input[type="text"] {
+        flex-grow: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid var(--text-light);
+        padding: 12px;
+        font-family: 'Lora', serif;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+        border-bottom-color: var(--gold-accent);
+    }
+
+    input[type="text"]::placeholder {
+        font-style: italic;
+        color: #aaa;
+    }
+
+    button {
+        padding: 12px 25px;
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid transparent;
+        font-size: 0.85rem;
+    }
+
+    .btn-insert {
+        background: var(--text-main);
+        color: #fff;
+    }
+    .btn-insert:hover {
+        background: var(--gold-accent);
+        color: var(--text-main);
+    }
+
+    /* TRAVERSAL CONTROLS */
+    .controls-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        color: #888;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-traverse {
+        background: transparent;
+        border: 1px solid var(--text-light);
+        color: var(--text-light);
+    }
+    .btn-traverse:hover {
+        background: var(--text-light);
+        color: #fff;
+    }
+
+    /* OUTPUT AREA (Stylized) */
+    .output-section {
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        padding: 20px;
+        min-height: 150px;
+        position: relative;
+    }
+
+    .output-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.8rem;
+        color: var(--gold-accent);
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        display: block;
+        letter-spacing: 2px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+
+    /* The chips/tokens for numbers */
+    .node-sequence {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .node-token {
+        background: #fff;
+        border: 1px solid var(--text-main);
+        color: var(--text-main);
+        font-family: 'Courier Prime', monospace;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 2px;
+        box-shadow: 2px 2px 0px rgba(212, 175, 55, 0.4);
+        animation: popIn 0.3s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    .log-text {
+        font-family: 'Courier Prime', monospace;
+        color: var(--text-light);
+        font-size: 0.95rem;
+    }
+
+    @keyframes popIn {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status-msg {
+        margin-top: 10px;
+        font-style: italic;
+        color: #666;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="bt-section">
+    <h2>The Binary Ledger</h2>
+    <div class="subtitle">Structural Data Registry</div>
+
+    <div class="ledger-container">
+        
+        <form id="insertForm" class="input-row">
+            <input type="text" name="value" placeholder="Enter integer value..." required autocomplete="off">
+            <button type="submit" class="btn-insert">Record Entry</button>
+        </form>
+
+        <span class="controls-label">Select Retrieval Method:</span>
+        <div class="controls-grid">
+            <button class="btn-traverse" onclick="traverse('inorder')">In-Order</button>
+            <button class="btn-traverse" onclick="traverse('preorder')">Pre-Order</button>
+            <button class="btn-traverse" onclick="traverse('postorder')">Post-Order</button>
+            <button class="btn-traverse" onclick="traverse('level')">Level Order</button>
+        </div>
+
+        <div class="output-section">
+            <span class="output-label" id="outputTitle">System Status</span>
+            <div id="outputContainer" class="node-sequence">
+                <span class="log-text">Waiting for input...</span>
+            </div>
+            <div id="statusMsg" class="status-msg"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- INSERTION LOGIC ---
+    document.getElementById("insertForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const input = e.target.elements.value;
+        const val = parseInt(input.value);
+
+        if (isNaN(val)) {
+            alert("Entry rejected. Please provide a valid integer.");
+            return;
+        }
+
+        try {
+            const res = await fetch("/insert", { 
+                method: "POST", 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: val }) 
+            });
+            
+            const data = await res.json();
+            
+            if(data.error) {
+                renderError(data.error);
+            } else {
+                // Show success and the new level order
+                renderOutput("Entry Recorded successfully", data.level_order);
+                document.getElementById("statusMsg").textContent = `Item '${val}' added to the registry.`;
+            }
+            input.value = ""; 
+
+        } catch (err) {
+            renderError("Communication Error: " + err.message);
+        }
+    };
+
+    // --- TRAVERSAL LOGIC ---
+    async function traverse(type) {
+        try {
+            document.getElementById("outputTitle").textContent = "Retrieving Data...";
+            document.getElementById("outputContainer").innerHTML = '<span class="log-text">Processing request...</span>';
+            
+            // Corrected Route: /traverse/<type>
+            const res = await fetch("/traverse/" + type); 
+            
+            if (!res.ok) throw new Error("Method not found");
+            
+            const data = await res.json();
+            
+            // The API returns an array directly (e.g. [1, 2, 3])
+            // or an object {inorder: [...]}. Let's handle both just in case.
+            let sequence = Array.isArray(data) ? data : (data[type] || data.result || []);
+
+            // Map standard titles
+            const titles = {
+                'inorder': 'In-Order Sequence (Left-Root-Right)',
+                'preorder': 'Pre-Order Sequence (Root-Left-Right)',
+                'postorder': 'Post-Order Sequence (Left-Right-Root)',
+                'level': 'Level-Order Sequence (Breadth First)'
+            };
+
+            renderOutput(titles[type] || type.toUpperCase(), sequence);
+            document.getElementById("statusMsg").textContent = `Total Nodes Found: ${sequence.length}`;
+
+        } catch (err) {
+            renderError(err.message);
+        }
+    }
+
+    // --- VISUAL RENDERER ---
+    function renderOutput(title, numbersArray) {
+        const container = document.getElementById("outputContainer");
+        const titleEl = document.getElementById("outputTitle");
+        
+        titleEl.textContent = title;
+        container.innerHTML = ""; // Clear previous
+
+        if (!numbersArray || numbersArray.length === 0) {
+            container.innerHTML = '<span class="log-text">Registry is currently empty.</span>';
+            return;
+        }
+
+        // Create a "Chip" for each number with a slight delay for animation
+        numbersArray.forEach((num, index) => {
+            const chip = document.createElement("div");
+            chip.classList.add("node-token");
+            chip.textContent = num;
+            chip.style.animationDelay = `${index * 0.05}s`; // Stagger effect
+            container.appendChild(chip);
+        });
+    }
+
+    function renderError(msg) {
+        document.getElementById("outputTitle").textContent = "System Alert";
+        document.getElementById("outputContainer").innerHTML = `<span class="log-text" style="color: #800020;">✦ Error: ${msg}</span>`;
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reservations Ledger
+{% endblock title %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg-color: #FDFBF7;       /* Ivory Parchment */
+        --text-main: #2B1D0E;      /* Dark Coffee */
+        --text-light: #5C4033;     /* Mocha */
+        --gold-accent: #D4AF37;    /* Metallic Gold */
+        --ledger-lines: #E0D6C8;
+    }
+
+    .restaurant-section {
+        min-height: calc(100vh - 80px);
+        padding: 40px 20px;
+        background-color: var(--bg-color);
+        background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: 'Lora', serif;
+        color: var(--text-main);
+    }
+
+    h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        color: var(--text-main);
+        font-style: italic;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+
+    .sub-header {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 40px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--gold-accent);
+        padding-bottom: 10px;
+    }
+
+    /* --- THE LEDGER (QUEUE VISUALIZER) --- */
+    .ledger-book {
+        width: 100%;
+        max-width: 900px;
+        background: #fff;
+        border: 1px solid #d3c4a9;
+        box-shadow: 
+            5px 0 15px rgba(0,0,0,0.05),
+            inset 20px 0 30px rgba(0,0,0,0.02); /* Book spine effect */
+        padding: 40px;
+        margin-bottom: 30px;
+        position: relative;
+        min-height: 200px;
+    }
+
+    /* Decorative corner details */
+    .ledger-book::before, .ledger-book::after {
+        content: '';
+        position: absolute;
+        width: 20px; height: 20px;
+        border: 1px solid var(--gold-accent);
+    }
+    .ledger-book::before { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+    .ledger-book::after { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+    .ledger-list {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        padding: 10px 0;
+        align-items: center;
+        /* Scrollbar styling */
+        scrollbar-width: thin;
+        scrollbar-color: var(--gold-accent) #f0f0f0;
+    }
+
+    /* Queue Item (Name Card) */
+    .guest-card {
+        background: #fff;
+        border: 1px solid var(--ledger-lines);
+        border-left: 4px solid #ccc;
+        padding: 15px 25px;
+        min-width: 180px;
+        text-align: center;
+        margin-right: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        position: relative;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .guest-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--gold-accent);
+    }
+
+    .guest-name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--text-main);
+    }
+
+    .guest-status {
+        font-family: 'Cinzel', serif;
+        font-size: 0.65rem;
+        color: #999;
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+    /* The First Item (VIP) */
+    .guest-card.vip {
+        border-left-color: var(--gold-accent);
+        background: #FFFDF5;
+    }
+
+    .guest-card.vip .guest-status {
+        color: var(--gold-accent);
+        font-weight: bold;
+    }
+
+    /* Empty State */
+    .empty-ledger {
+        text-align: center;
+        width: 100%;
+        color: #999;
+        font-style: italic;
+        padding: 40px;
+    }
+
+    /* --- STATS SUMMARY --- */
+    .stats-row {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 40px;
+        border-top: 1px solid var(--ledger-lines);
+        border-bottom: 1px solid var(--ledger-lines);
+        padding: 15px 40px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        color: var(--text-main);
+        font-weight: bold;
+    }
+
+    /* --- CONTROL DESK --- */
+    .reception-desk {
+        width: 100%;
+        max-width: 800px;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 20px;
+        padding: 30px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .input-wrapper {
+        display: flex;
+        border-bottom: 2px solid var(--text-main);
+        transition: border-color 0.3s;
+    }
+    
+    .input-wrapper:focus-within {
+        border-bottom-color: var(--gold-accent);
+    }
+
+    input[type="text"] {
+        flex-grow: 1;
+        border: none;
+        background: transparent;
+        padding: 10px;
+        font-family: 'Lora', serif;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        outline: none;
+    }
+    
+    input[type="text"]::placeholder {
+        font-style: italic;
+        color: #aaa;
+    }
+
+    /* Buttons */
+    .hotel-btn {
+        padding: 12px;
+        border: 1px solid transparent;
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        letter-spacing: 1px;
+    }
+
+    .btn-gold {
+        background: var(--gold-accent);
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(212, 175, 55, 0.2);
+    }
+    .btn-gold:hover {
+        background: #b5952f;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--text-light);
+        color: var(--text-light);
+    }
+    .btn-outline:hover {
+        background: var(--text-light);
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .reception-desk { grid-template-columns: 1fr; }
+        .stats-row { flex-direction: column; gap: 20px; }
+    }
+
+</style>
+
+<div class="restaurant-section">
+    <h1>Grand Dining Hall</h1>
+    <div class="sub-header">
+        First-In First-Out Reservation Protocol
+    </div>
+
+    <div class="ledger-book">
+        <div class="ledger-list" id="queueDisplay">
+            {% if queue %}
+                {% for customer in queue %}
+                    {% if loop.first %}
+                        <div class="guest-card vip">
+                            <div class="guest-name">{{ customer }}</div>
+                            <div class="guest-status">Seating Now</div>
+                        </div>
+                    {% else %}
+                        <div class="guest-card">
+                            <div class="guest-name">{{ customer }}</div>
+                            <div class="guest-status">In Waiting Room</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-ledger">
+                    The reservation list is currently empty.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if queue %}
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="stat-label">Party Count</div>
+            <div class="stat-num">{{ queue|length }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Next Party</div>
+            <div class="stat-num" style="font-size: 1.2rem;">{{ queue[0] }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="reception-desk">
+        
+        <form action="/projects/restaurant_simulator/add" method="POST" style="display: flex; gap: 10px;">
+            <div class="input-wrapper" style="flex-grow: 1;">
+                <input type="text" id="name" name="name" placeholder="Guest Name..." required autocomplete="off">
+            </div>
+            <button type="submit" class="hotel-btn btn-gold">
+                Book
+            </button>
+        </form>
+
+        <form action="/projects/restaurant_simulator/remove" method="POST">
+            <button type="submit" class="hotel-btn btn-outline" style="width: 100%;">
+                Seat Next
+            </button>
+        </form>
+
+        <form action="/projects/restaurant_simulator/size" method="GET">
+            <button type="submit" class="hotel-btn btn-outline" style="width: 100%;">
+                Capacity
+            </button>
+        </form>
+        
+    </div>
+</div>
+{% endblock content %}
