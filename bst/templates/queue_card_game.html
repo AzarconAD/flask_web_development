@@ -118,23 +118,17 @@ High Stakes Table
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'Playfair Display', serif;
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: var(--suit-black); /* Default to black suit color */
         box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
         position: relative;
+        overflow: hidden;
     }
 
-    /* Corner values on cards */
-    .playing-card::before, .playing-card::after {
-        content: attr(data-value);
-        position: absolute;
-        font-size: 1rem;
-        font-family: 'Cinzel', serif;
+    .playing-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
     }
-    .playing-card::before { top: 5px; left: 5px; }
-    .playing-card::after { bottom: 5px; right: 5px; transform: rotate(180deg); }
 
     .deck-info {
         font-family: 'Cinzel', serif;
@@ -279,9 +273,9 @@ High Stakes Table
                 <div>
                     <div style="font-family: 'Cinzel', serif; color: #aaa; margin-bottom: 5px; font-size: 0.8rem;">HOUSE CARD</div>
                     <div class="card-slot">
-                        {% if game.banker_card != '--' %}
-                            <div class="playing-card" data-value="{{ game.banker_card }}">
-                                {{ game.banker_card }}
+                        {% if game.banker_card_image %}
+                            <div class="playing-card">
+                                <img src="{{ url_for('assets', filename='cards/' + game.banker_card_image) }}" alt="{{ game.banker_card }}">
                             </div>
                         {% else %}
                             <div style="color: rgba(255,255,255,0.2); font-size: 2rem;">?</div>
@@ -307,9 +301,9 @@ High Stakes Table
                 
                 <div style="text-align: center;">
                     <div class="card-slot" style="margin: 0 auto 20px;">
-                        {% if game.player_card != '--' %}
-                            <div class="playing-card" data-value="{{ game.player_card }}" style="color: var(--suit-red);">
-                                {{ game.player_card }}
+                        {% if game.player_card_image %}
+                            <div class="playing-card">
+                                <img src="{{ url_for('assets', filename='cards/' + game.player_card_image) }}" alt="{{ game.player_card }}">
                             </div>
                         {% else %}
                             <div style="color: rgba(255,255,255,0.2); font-size: 2rem;">?</div>
