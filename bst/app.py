@@ -1,14 +1,22 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from collections import deque
+import os
 
 # --- CUSTOM IMPORTS ---
 # 1. Card Game Logic (queue_card_game.py)
 from queue_card_game import Game 
 # 2. Binary Tree Logic (binary_tree.py)
 from binary_tree import BinaryTree
+# 3. Sorting Functions (sorting_functions.py)
+from sorting_functions import bubble_sort, selection_sort, insertion_sort, merge_sort, quick_sort
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
+
+# Route to serve assets
+@app.route('/assets/<path:filename>')
+def assets(filename):
+    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
 
 # ==========================================
 #    INTERNAL DATA STRUCTURE CLASSES 
@@ -168,6 +176,7 @@ class TransportGraph:
         return None
 
 # --- VISUALIZER HELPERS ---
+# For BST (Binary Search Tree)
 def build_tree_data(node, x, y, level, nodes, edges):
     if not node: return
     offset = max(200 // (2 ** (level-1)) if level > 1 else 200, 40)
@@ -185,6 +194,28 @@ def get_text_tree(node, prefix="", is_left=True):
     if node.right: result += get_text_tree(node.right, prefix + ("│   " if is_left else "    "), False)
     result += prefix + ("└── " if is_left else "┌── ") + str(node.value) + "\n"
     if node.left: result += get_text_tree(node.left, prefix + ("    " if is_left else "│   "), True)
+    return result
+
+# For Binary Tree (uses different Node class from binary_tree.py)
+# Use object id to handle duplicate values
+def build_tree_data_binary(node, x, y, level, nodes, edges):
+    if not node: return
+    offset = max(200 // (2 ** (level-1)) if level > 1 else 200, 40)
+    node_id = id(node)  # Use unique object ID instead of value
+    nodes.append({'id': node_id, 'value': node.value, 'x': x, 'y': y})
+    if node.left:
+        edges.append({'from': node_id, 'to': id(node.left)})
+        build_tree_data_binary(node.left, x - offset, y + 80, level + 1, nodes, edges)
+    if node.right:
+        edges.append({'from': node_id, 'to': id(node.right)})
+        build_tree_data_binary(node.right, x + offset, y + 80, level + 1, nodes, edges)
+
+def get_text_tree_binary(node, prefix="", is_left=True):
+    if not node: return ""
+    result = ""
+    if node.right: result += get_text_tree_binary(node.right, prefix + ("│   " if is_left else "    "), False)
+    result += prefix + ("└── " if is_left else "┌── ") + str(node.value) + "\n"
+    if node.left: result += get_text_tree_binary(node.left, prefix + ("    " if is_left else "│   "), True)
     return result
 
 
@@ -349,10 +380,24 @@ def render_bst_view(highlight=None):
 # ==========================================
 @app.route('/projects/binary_tree')
 def binary_tree_page():
-    return render_template('binary_tree.html')
+    nodes = []
+    edges = []
+    tree_visual = ""
+    
+    # Build tree visualization data if tree has nodes
+    if tree.root:
+        build_tree_data_binary(tree.root, 400, 40, 1, nodes, edges)
+        tree_visual = get_text_tree_binary(tree.root)
+    
+    return render_template('binary_tree.html',
+                         nodes=nodes,
+                         edges=edges,
+                         svg_info={'width': 800, 'height': 600, 'node_radius': 20},
+                         tree_visual=tree_visual,
+                         level_order=tree.level_order())
 
-@app.route("/insert", methods=["POST"])
-def insert():
+@app.route("/projects/binary_tree/insert", methods=["POST"])
+def binary_tree_insert():
     data = request.get_json()
     if data: value = data.get("value")
     else: value = request.form.get("value")
@@ -366,8 +411,8 @@ def insert():
             return jsonify({"error": "Invalid integer"}), 400
     return jsonify({"error": "No value provided"}), 400
 
-@app.route("/traverse/<method>")
-def traverse(method):
+@app.route("/projects/binary_tree/traverse/<method>")
+def binary_tree_traverse(method):
     if method == "preorder": return jsonify(tree.preorder()) 
     elif method == "inorder": return jsonify(tree.inorder())
     elif method == "postorder": return jsonify(tree.postorder())
@@ -376,7 +421,132 @@ def traverse(method):
 
 
 # ==========================================
-#    PROJECT 6: TRANSPORT OPTIMIZATION (This was missing!)
+#    PROJECT 6: SORTING VISUALIZER
+# ==========================================
+# Wrapper functions to capture steps for visualization
+def bubble_sort_steps(array):
+    steps = []
+    n = len(array)
+    arr = array.copy()
+    for i in range(n - 1):
+        for j in range(n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                steps.append(arr.copy())
+    return steps
+
+def selection_sort_steps(array):
+    steps = []
+    n = len(array)
+    arr = array.copy()
+    for i in range(n - 1):
+        min_index = i
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_index]:
+                min_index = j
+        if min_index != i:
+            arr[i], arr[min_index] = arr[min_index], arr[i]
+            steps.append(arr.copy())
+    return steps
+
+def insertion_sort_steps(array):
+    steps = []
+    n = len(array)
+    arr = array.copy()
+    for i in range(1, n):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+        steps.append(arr.copy())
+    return steps
+
+def merge_sort_steps(array):
+    steps = []
+    arr = array.copy()
+    
+    def merge_sort_rec(arr):
+        if len(arr) > 1:
+            mid = len(arr) // 2
+            left_half = arr[:mid]
+            right_half = arr[mid:]
+            merge_sort_rec(left_half)
+            merge_sort_rec(right_half)
+            i = j = k = 0
+            while i < len(left_half) and j < len(right_half):
+                if left_half[i] < right_half[j]:
+                    arr[k] = left_half[i]
+                    i += 1
+                else:
+                    arr[k] = right_half[j]
+                    j += 1
+                k += 1
+            while i < len(left_half):
+                arr[k] = left_half[i]
+                i += 1
+                k += 1
+            while j < len(right_half):
+                arr[k] = right_half[j]
+                j += 1
+                k += 1
+            steps.append(arr.copy())
+    
+    merge_sort_rec(arr)
+    return steps
+
+def quick_sort_steps(array):
+    steps = []
+    arr = array.copy()
+    
+    def quick_sort_rec(arr, low, high):
+        if low < high:
+            pi = partition(arr, low, high)
+            steps.append(arr.copy())
+            quick_sort_rec(arr, low, pi - 1)
+            quick_sort_rec(arr, pi + 1, high)
+    
+    def partition(arr, low, high):
+        pivot = arr[high]
+        i = low - 1
+        for j in range(low, high):
+            if arr[j] <= pivot:
+                i += 1
+                arr[i], arr[j] = arr[j], arr[i]
+        arr[i + 1], arr[high] = arr[high], arr[i + 1]
+        return i + 1
+    
+    quick_sort_rec(arr, 0, len(arr) - 1)
+    return steps
+
+@app.route('/projects/sorting_visualizer', methods=["GET", "POST"])
+def sorting_visualizer():
+    steps = []
+    numbers = ""
+    algo = ""
+    if request.method == "POST":
+        numbers = request.form["numbers"]
+        algo = request.form["algorithm"]
+        try:
+            array = list(map(int, numbers.strip().split(",")))
+        except:
+            array = []
+        if algo == "Bubble Sort":
+            steps = bubble_sort_steps(array)
+        elif algo == "Selection Sort":
+            steps = selection_sort_steps(array)
+        elif algo == "Insertion Sort":
+            steps = insertion_sort_steps(array)
+        elif algo == "Merge Sort":
+            steps = merge_sort_steps(array)
+        elif algo == "Quick Sort":
+            steps = quick_sort_steps(array)
+    return render_template("sorting.html", steps=steps, numbers=numbers, algo=algo)
+
+
+# ==========================================
+#    PROJECT 7: TRANSPORT OPTIMIZATION (This was missing!)
 # ==========================================
 @app.route('/projects/transport_optimization', methods=['GET', 'POST'])
 def transport_optimization():
