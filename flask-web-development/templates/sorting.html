@@ -1,8 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Algorithm Observatory</title>
+{% extends "base.html" %}
+
+{% block title %}
+Sorting Algorithms
+{% endblock title %}
+
+{% block content %}
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
@@ -328,8 +330,6 @@
 </head>
 <body>
 
-    <a href="/projects" class="back-link">← Portfolio</a>
-
     <h1>Algorithm Observatory</h1>
     <div class="subtitle">Comparative Sorting Analysis</div>
 
@@ -404,7 +404,6 @@
             </div>
         {% endif %}
     </div>
-
     <script>
         const steps = {{ steps|tojson }};
         const container = document.getElementById("bar-container");
@@ -449,6 +448,5 @@
             animateSteps();
         }
     </script>
-
 </body>
-</html>
+{% endblock content %}
