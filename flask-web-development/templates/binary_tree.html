@@ -256,7 +256,7 @@
         }
 
         try {
-            const res = await fetch("/insert", { 
+            const res = await fetch("/projects/binary_tree/insert", { 
                 method: "POST", 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ value: val }) 
@@ -285,7 +285,7 @@
             document.getElementById("outputContainer").innerHTML = '<span class="log-text">Processing request...</span>';
             
             // Corrected Route: /traverse/<type>
-            const res = await fetch("/traverse/" + type); 
+            const res = await fetch("/projects/binary_tree/traverse/" + type); 
             
             if (!res.ok) throw new Error("Method not found");
             
