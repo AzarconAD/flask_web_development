@@ -9,6 +9,8 @@ from queue_card_game import Game
 from binary_tree import BinaryTree
 # 3. Sorting Functions (sorting_functions.py)
 from sorting_functions import bubble_sort, selection_sort, insertion_sort, merge_sort, quick_sort
+# 4. Transport Optimization (station_lines_graph.py)
+from station_lines_graph import stations_graph
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -77,20 +79,20 @@ class TransportGraph:
             'Roosevelt': (50, 50),
             'Balintawak': (-200, 50),
             'Monumento': (-450, 50),
-            '5th Avenue': (-450, 100),
-            'R Papa': (-450, 140),
-            'Abad Santos': (-450, 180),
+            '5th_Avenue': (-450, 100),
+            'R_Papa': (-450, 140),
+            'Abad_Santos': (-450, 180),
             'Blumentritt': (-450, 220),
             'Tayuman': (-450, 260),
             'Bambang': (-450, 300),
-            'Doroteo Jose': (-450, 340),
+            'Doroteo_Jose': (-450, 340),
             'Carriedo': (-450, 380),
-            'Central Terminal': (-450, 420),
-            'UN Avenue': (-450, 460),
-            'Pedro Gil': (-450, 500),
+            'Central_Terminal': (-450, 420),
+            'UN_Avenue': (-450, 460),
+            'Pedro_Gil': (-450, 500),
             'Quirino': (-450, 540),
-            'Vito Cruz': (-450, 580),
-            'Gil Puyat': (-450, 620),
+            'Vito_Cruz': (-450, 580),
+            'Gil_Puyat': (-450, 620),
             'Libertad': (-450, 660),
             'EDSA': (-450, 700),
             'Baclaran': (-450, 740),
@@ -99,11 +101,11 @@ class TransportGraph:
             'Recto': (-420, 340),
             'Legarda': (-340, 340),
             'Pureza': (-260, 340),
-            'V. Mapa': (-160, 340),
-            'J. Ruiz': (-80, 340),
+            'V_Mapa': (-160, 340),
+            'J_Ruiz': (-80, 340),
             'Gilmore': (30, 335),
-            'Betty Go-Belmonte': (80, 300),
-            'Araneta Center-Cubao': (180, 300), # Interchange
+            'Betty_Go-Belmonte': (80, 300),
+            'Araneta_Center-Cubao': (180, 300), # Interchange
             'Anonas': (240, 300),
             'Katipunan': (300, 300),
             'Santolan': (360, 335),
@@ -111,69 +113,19 @@ class TransportGraph:
             'Antipolo': (520, 335),
 
             # --- MRT 3 (Blue) ---
-            'North Ave': (60, 100),
-            'Quezon Ave': (120, 140),
-            'GMA Kamuning': (180, 180),
+            'North_Avenue': (60, 100),
+            'Quezon_Avenue': (120, 140),
+            'GMA_Kamuning': (180, 180),
             'Santolan-Anapolis': (180, 380),
             'Ortigas': (180, 480),
-            'Shaw Boulevard': (140, 520),
-            'Boni Avenue': (80, 560),
+            'Shaw_Boulevard': (140, 520),
+            'Boni_Avenue': (80, 560),
             'Guadalupe': (0, 620),
             'Buendia': (-80, 680),
             'Ayala': (-180, 703),
             'Magallanes': (-280, 703),
-            'Taft Avenue': (-380, 703)
+            'Taft_Avenue': (-380, 703)
         }
-
-        # 2. Define Connections (Edges)
-        self.edges = {}
-        
-        def add_connection(station1, station2):
-            if station1 not in self.edges: self.edges[station1] = []
-            if station2 not in self.edges: self.edges[station2] = []
-            self.edges[station1].append(station2)
-            self.edges[station2].append(station1)
-
-        # LRT 1
-        lrt1 = ['Roosevelt', 'Balintawak', 'Monumento', '5th Avenue', 'R Papa', 
-                'Abad Santos', 'Blumentritt', 'Tayuman', 'Bambang', 'Doroteo Jose', 
-                'Carriedo', 'Central Terminal', 'UN Avenue', 'Pedro Gil', 'Quirino', 
-                'Vito Cruz', 'Gil Puyat', 'Libertad', 'EDSA', 'Baclaran']
-        for i in range(len(lrt1) - 1): add_connection(lrt1[i], lrt1[i+1])
-
-        # LRT 2
-        lrt2 = ['Recto', 'Legarda', 'Pureza', 'V. Mapa', 'J. Ruiz', 'Gilmore', 
-                'Betty Go-Belmonte', 'Araneta Center-Cubao', 'Anonas', 'Katipunan', 
-                'Santolan', 'Marikina-Pasig', 'Antipolo']
-        for i in range(len(lrt2) - 1): add_connection(lrt2[i], lrt2[i+1])
-
-        # MRT 3
-        mrt3 = ['North Ave', 'Quezon Ave', 'GMA Kamuning', 'Araneta Center-Cubao', 
-                'Santolan-Anapolis', 'Ortigas', 'Shaw Boulevard', 'Boni Avenue', 
-                'Guadalupe', 'Buendia', 'Ayala', 'Magallanes', 'Taft Avenue']
-        for i in range(len(mrt3) - 1): add_connection(mrt3[i], mrt3[i+1])
-
-        # INTERCHANGES
-        add_connection('Roosevelt', 'North Ave')
-        add_connection('Doroteo Jose', 'Recto')
-        add_connection('EDSA', 'Taft Avenue')
-
-    def get_shortest_path(self, start, end):
-        if start not in self.edges or end not in self.edges: return None
-        queue = deque([[start]])
-        visited = set()
-        
-        while queue:
-            path = queue.popleft()
-            node = path[-1]
-            if node == end: return path
-            if node not in visited:
-                visited.add(node)
-                for neighbor in self.edges.get(node, []):
-                    new_path = list(path)
-                    new_path.append(neighbor)
-                    queue.append(new_path)
-        return None
 
 # --- VISUALIZER HELPERS ---
 # For BST (Binary Search Tree)
@@ -227,7 +179,7 @@ tabs = deque()
 bst_tree = BST()         
 card_game = Game()       
 tree = BinaryTree()      
-transit_map = TransportGraph() # Project 6 Instance
+transit_map = TransportGraph()
 
 
 # ==========================================
@@ -546,35 +498,51 @@ def sorting_visualizer():
 
 
 # ==========================================
-#    PROJECT 7: TRANSPORT OPTIMIZATION (This was missing!)
+#    PROJECT 7: TRANSPORT OPTIMIZATION
 # ==========================================
+
+def bfs_shortest_path(graph, start, goal):
+        visited = set()
+        queue = deque([[start]])
+        while queue:
+            path = queue.popleft()
+            station = path[-1]
+            if station == goal:
+                return path
+            if station not in visited:
+                visited.add(station)
+                for neighbor in graph.vertices.get(station, []):
+                    queue.append(path + [neighbor])
+        return None
+
 @app.route('/projects/transport_optimization', methods=['GET', 'POST'])
 def transport_optimization():
     path = None
-    stations = []
-    
-    # Check if map exists (it is defined in globals at the top)
-    if 'transit_map' in globals():
-        stations = list(transit_map.edges.keys())
-        stations.sort() # Sort alphabetically for easy dropdown
-        
-        if request.method == 'POST':
-            start = request.form.get('from_station')
-            end = request.form.get('to_station')
-            
-            # BFS Algorithm
-            path = transit_map.get_shortest_path(start, end)
-            
+    message = ""
+    stations = sorted([s.replace('_', ' ') for s in stations_graph.vertices.keys()])
+    display_to_key = {s.replace('_', ' '): s for s in stations_graph.vertices.keys()}
+
+    if request.method == "POST":
+        start_display = request.form.get("from_station")
+        end_display = request.form.get("to_station")
+
+        start = display_to_key.get(start_display)
+        end = display_to_key.get(end_display)
+
+        if start is None or end is None:
+            message = "Invalid station input! Please select from available stations."
+        else:
+            path = bfs_shortest_path(stations_graph, start, end)
             if not path:
-                flash(f"No path found between {start} and {end}", "error")
-    else:
-        flash("Error: Transit Map not initialized.", "error")
+                message = "No path found between the selected stations."
 
-    return render_template('transport.html', 
-                           stations=stations, 
-                           path=path, 
-                           station_coords=transit_map.coords if 'transit_map' in globals() else {})
-
+    return render_template(
+        "transport.html", 
+        stations=stations, 
+        path=path, 
+        message=message, 
+        station_coords=transit_map.coords  # coords for plotting
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
